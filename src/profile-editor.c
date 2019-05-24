@@ -639,6 +639,47 @@ init_encodings_combo (GtkWidget *widget)
                                   "text", ENCODINGS_COLUMN_TEXT, NULL);
 }
 
+static void
+profile_preserve_working_directory_checkbutton_cb (GtkToggleButton *checkbutton, gpointer user_data)
+{
+  GSettings *profile = G_SETTINGS (user_data);
+  gboolean preserve_working_directory;
+
+  preserve_working_directory = gtk_toggle_button_get_active (checkbutton);
+  g_settings_set (profile, TERMINAL_PROFILE_PRESERVE_WORKING_DIRECTORY_KEY, "mb", TRUE, preserve_working_directory);
+}
+
+static void
+profile_update_preserve_working_directory_checkbutton (GtkWidget *checkbutton, GSettings *profile)
+{
+  gboolean preserve_working_directory;
+
+  preserve_working_directory = terminal_util_get_preserve_working_directory (profile);
+
+  g_signal_handlers_block_by_func (checkbutton, profile_preserve_working_directory_checkbutton_cb, profile);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (checkbutton), preserve_working_directory);
+  g_signal_handlers_unblock_by_func (checkbutton, profile_preserve_working_directory_checkbutton_cb, profile);
+}
+
+static void
+profile_use_custom_command_setting_cb (GSettings *profile, const gchar *key, gpointer user_data)
+{
+
+  GtkWidget *checkbutton = GTK_WIDGET (user_data);
+  profile_update_preserve_working_directory_checkbutton (checkbutton, profile);
+}
+
+static gboolean
+preserve_working_directory_to_bool (GValue *value, GVariant *variant, gpointer user_data)
+{
+  GSettings *profile = G_SETTINGS (user_data);
+  gboolean preserve_working_directory;
+
+  preserve_working_directory = terminal_util_get_preserve_working_directory (profile);
+  g_value_set_boolean (value, preserve_working_directory);
+  return TRUE;
+}
+
 static gboolean
 s_to_rgba (GValue *value,
            GVariant *variant,
@@ -1201,10 +1242,29 @@ profile_prefs_load (const char *uuid, GSettings *profile)
                                "active",
                                G_SETTINGS_BIND_GET | G_SETTINGS_BIND_SET |
                                G_SETTINGS_BIND_INVERT_BOOLEAN);
+
+  w = (GtkWidget *) gtk_builder_get_object (builder, "preserve-working-directory-checkbutton");
+  profile_update_preserve_working_directory_checkbutton (w, profile);
+  profile_prefs_signal_connect (w, "toggled",
+                                G_CALLBACK (profile_preserve_working_directory_checkbutton_cb),
+                                profile);
+  profile_prefs_signal_connect (profile, "changed::" TERMINAL_PROFILE_USE_CUSTOM_COMMAND_KEY,
+                                G_CALLBACK (profile_use_custom_command_setting_cb),
+                                w);
+  profile_prefs_settings_bind_with_mapping (profile,
+                                            TERMINAL_PROFILE_PRESERVE_WORKING_DIRECTORY_KEY,
+                                            w,
+                                            "active",
+                                            G_SETTINGS_BIND_GET,
+                                            (GSettingsBindGetMapping) preserve_working_directory_to_bool,
+                                            NULL,
+                                            profile,
+                                            NULL);
   profile_prefs_settings_bind (profile, TERMINAL_PROFILE_USE_CUSTOM_COMMAND_KEY,
                                gtk_builder_get_object (builder,
                                                        "use-custom-command-checkbutton"),
                                "active", G_SETTINGS_BIND_GET | G_SETTINGS_BIND_SET);
+
   profile_prefs_settings_bind (profile, TERMINAL_PROFILE_USE_THEME_COLORS_KEY,
                                gtk_builder_get_object (builder,
                                                        "use-theme-colors-checkbutton"),

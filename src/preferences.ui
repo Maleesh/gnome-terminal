@@ -1818,6 +1818,21 @@
                             <property name="column_spacing">12</property>
                             <property name="row_spacing">6</property>
                             <child>
+                              <object class="GtkCheckButton" id="preserve-working-directory-checkbutton">
+                                <property name="label" translatable="yes">_Preserve working directory</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="top_attach">0</property>
+                                <property name="left_attach">0</property>
+                                <property name="width">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkCheckButton" id="login-shell-checkbutton">
                                 <property name="label" translatable="yes">_Run command as a login shell</property>
                                 <property name="visible">True</property>
@@ -1827,7 +1842,7 @@
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
-                                <property name="top_attach">0</property>
+                                <property name="top_attach">1</property>
                                 <property name="left_attach">0</property>
                                 <property name="width">2</property>
                               </packing>
@@ -1842,7 +1857,7 @@
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
-                                <property name="top_attach">1</property>
+                                <property name="top_attach">2</property>
                                 <property name="left_attach">0</property>
                                 <property name="width">2</property>
                               </packing>
@@ -1857,7 +1872,7 @@
                                 <property name="xalign">0</property>
                               </object>
                               <packing>
-                                <property name="top_attach">2</property>
+                                <property name="top_attach">3</property>
                                 <property name="left_attach">0</property>
                               </packing>
                             </child>
@@ -1868,7 +1883,7 @@
                                 <property name="hexpand">True</property>
                               </object>
                               <packing>
-                                <property name="top_attach">2</property>
+                                <property name="top_attach">3</property>
                                 <property name="left_attach">1</property>
                               </packing>
                             </child>
@@ -1882,7 +1897,7 @@
                                 <property name="xalign">0</property>
                               </object>
                               <packing>
-                                <property name="top_attach">3</property>
+                                <property name="top_attach">4</property>
                                 <property name="left_attach">0</property>
                               </packing>
                             </child>
@@ -1901,7 +1916,7 @@
                                 </child>
                               </object>
                               <packing>
-                                <property name="top_attach">3</property>
+                                <property name="top_attach">4</property>
                                 <property name="left_attach">1</property>
                               </packing>
                             </child>

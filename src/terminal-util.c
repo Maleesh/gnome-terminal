@@ -40,6 +40,7 @@
 #include "terminal-accels.h"
 #include "terminal-app.h"
 #include "terminal-intl.h"
+#include "terminal-schemas.h"
 #include "terminal-util.h"
 #include "terminal-libgsystem.h"
 
@@ -1428,4 +1429,38 @@ terminal_util_save_print_settings (GtkPrintSettings *settings,
                        NULL);
 
   save_cache_keyfile (keyfile, TERMINAL_PRINT_SETTINGS_FILENAME);
+}
+
+/**
+ * terminal_util_get_preserve_working_directory:
+ * @settings: a #GSettings
+ *
+ * Looks at the "custom-command" profile setting to resolve the value
+ * of the "preserve-working-directory" setting, if it hasn't been
+ * explicitly set.
+ *
+ * Returns: Whether the working directory of the current terminal
+ * should be used when creating a new terminal tab or window.
+ */
+gboolean
+terminal_util_get_preserve_working_directory (GSettings *profile)
+{
+  gboolean preserve_working_directory;
+  gboolean preserve_working_directory_set;
+
+  g_settings_get (profile,
+                  TERMINAL_PROFILE_PRESERVE_WORKING_DIRECTORY_KEY,
+                  "mb",
+                  &preserve_working_directory_set,
+                  &preserve_working_directory);
+
+  if (!preserve_working_directory_set)
+    {
+      gboolean use_custom_command;
+
+      use_custom_command = g_settings_get_boolean (profile, TERMINAL_PROFILE_USE_CUSTOM_COMMAND_KEY);
+      preserve_working_directory = !use_custom_command;
+    }
+
+  return preserve_working_directory;
 }

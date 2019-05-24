@@ -247,6 +247,11 @@
       <summary>Whether to launch the command in the terminal as a login shell</summary>
       <description>If true, the command inside the terminal will be launched as a login shell (argv[0] will have a hyphen in front of it).</description>
     </key>
+    <key name="preserve-working-directory" type="mb">
+      <default>nothing</default>
+      <summary>Whether to preserve the working directory when opening a new terminal</summary>
+      <description>If true, when opening a new terminal from a previous one the working directory of the older terminal is carried over to the new one.</description>
+    </key>
     <key name="use-custom-command" type="b">
       <default>false</default>
       <summary>Whether to run a custom command instead of the shell</summary>
