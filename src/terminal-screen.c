@@ -139,6 +139,8 @@ static void terminal_screen_system_font_changed_cb (GSettings *,
 static gboolean terminal_screen_popup_menu (GtkWidget *widget);
 static gboolean terminal_screen_button_press (GtkWidget *widget,
                                               GdkEventButton *event);
+static gboolean terminal_screen_button_release (GtkWidget *widget,
+												GdkEventButton *event);
 static gboolean terminal_screen_do_exec (TerminalScreen *screen,
                                          FDSetupData    *data,
                                          GError **error);
@@ -474,6 +476,7 @@ terminal_screen_class_init (TerminalScreenClass *klass)
   widget_class->style_updated = terminal_screen_style_updated;
   widget_class->drag_data_received = terminal_screen_drag_data_received;
   widget_class->button_press_event = terminal_screen_button_press;
+  widget_class->button_release_event = terminal_screen_button_release;
   widget_class->popup_menu = terminal_screen_popup_menu;
 
   terminal_class->child_exited = terminal_screen_child_exited;
@@ -1587,21 +1590,16 @@ terminal_screen_button_press (GtkWidget      *widget,
           if (button_press_event && button_press_event (widget, event))
             return TRUE;
 
-          terminal_screen_do_popup (screen, event, hyperlink, url, url_flavor, number_info);
+		  vte_terminal_paste_clipboard (VTE_TERMINAL (screen));
+		  return TRUE;
+        }
+      else {
+		  terminal_screen_do_popup (screen, event, hyperlink, url, url_flavor, number_info);
           hyperlink = NULL; /* adopted to the popup info */
           url = NULL; /* ditto */
           number_info = NULL; /* ditto */
           return TRUE;
-        }
-      else if (!(event->state & (GDK_CONTROL_MASK | GDK_MOD1_MASK)))
-        {
-          /* do popup on shift+right-click */
-          terminal_screen_do_popup (screen, event, hyperlink, url, url_flavor, number_info);
-          hyperlink = NULL; /* adopted to the popup info */
-          url = NULL; /* ditto */
-          number_info = NULL; /* ditto */
-          return TRUE;
-        }
+	  }
     }
 
   /* default behavior is to let the terminal widget deal with it */
@@ -1609,6 +1607,32 @@ terminal_screen_button_press (GtkWidget      *widget,
     return button_press_event (widget, event);
 
   return FALSE;
+}
+
+static gboolean
+terminal_screen_button_release (GtkWidget      *widget,
+		GdkEventButton *event)
+{
+	gboolean ret;
+
+	TerminalScreen *screen = TERMINAL_SCREEN (widget);
+	gboolean (* button_release_event) (GtkWidget*, GdkEventButton*) =
+		GTK_WIDGET_CLASS (terminal_screen_parent_class)->button_release_event;
+
+	ret = FALSE;
+	if (button_release_event) {
+		ret = button_release_event (widget, event);
+	}
+
+	if (event->button == 1) {
+		gboolean can_copy;
+
+		can_copy = vte_terminal_get_has_selection (VTE_TERMINAL (screen));
+
+		if (can_copy)
+			vte_terminal_copy_clipboard (VTE_TERMINAL (screen));
+	}
+	return ret;
 }
 
 /**
